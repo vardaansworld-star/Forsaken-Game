@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>FORSAKEN</title>
+        <meta name="description" content="Explore an abandoned estate in this immersive horror experience. Some doors should not be opened">
+        <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com"crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href=style.css>
+
+    </head>
+<body>
+    <div id="app">
+        <section id="screen-landing" class="screen active" aria-label="FORSAKEN">
+            <canvas id="landing-fog" aria-hidden="true"></canvas>
+            <div class="landing-inner">
+                <h1 class="title-xl">FORSAKEN</h1>
+                <p class="subtitle">Abondoned twenty-seven years ago...<br>Something stayed Behind!!!</p>
+                <div class="landing-buttons">
+                    <button class="btn" id="btn-enter">enter the house</button>
+                    <button class="btn quiet hidden" id="btn-continue">continue the tour</button>
+                </div>
+                <div class="landing-note" id="landing-note" aria-live="polite"></div>
+            </div>
+        </section>
+        <section id="screen-loading" class="screen" aria-label="Loading">
+            <div class="loading-inner">
+                <div class="head">FORSAKEN ARCHIVE - LOCATION UNKNOWN - YEAR ABANDONED 1999</div>
+                <div id="loading-rows"></div>
+                <div class="loading-warn" id="loading-warn"></div>
+            </div>
+        </section>
+        <section id="screen-game" class="screen" aria-label="Exploring the estate">
+            <div id="tilt-wrapper">
+                <canvas id="scene"></canvas>
+                <div id="hotspot-layer"></div>
+            </div>
+
+            <div id="vignette"></div>
+            <canvas id="grain"></canvas>
+            <div id="hud">
+                <div id="room-name"></div>
+                <button id="btn-settings" aria-label="Pause and settings">⚙</button>
+                <div id="caption" role="status"></div>
+            </div>
+            <div id="ccurtain"><div id="curtain-text"></div></div>
+            <div class="modal hidden" id="note-modal" role="dialog" aria-modal="true" aria-labelledby="note-title">
+                <div class="modal-card">
+                    <h3 id="note-title"></h3>
+                    <div id="note-body"></div>
+                    <div class="close-row"><button class="btn quiet" id="note-close">close</button></div>
+                </div>
+            </div>
+            <div id="jumpscare-overlay" class="hidden" aria-hidden="true">
+                <video id="jumpscare-video" src="jumpscare.mp4" playsinline preload="auto"></video>
+                <div id="jumpscare-lose" class="hidden">
+                    <h2>IT HAD YOU!</h2>
+                    <p>The house does not let you finish twice.</p>
+                    <div class="landing-buttons">
+                        <button class="btn" id="btn-jumpscare-restart">restart the tour</button>
+                        <button class="btn quiet" id="btn-jumpscare-home">return home</button>
+                    </div>
+                </div>
+            </div>
+            <div aria-live="polite" class="sr-only" id="sr-announcer"></div>
+        </section>
+
+        <section id="screen-pause" class="screen" aria-label="Paused">
+            <div class="panel">
+                <h2>FORSAKEM</h2>
+                <button class="btn" id="btn-resume">resume</button>
+                <button class="btn" id="btn-controls">controls</button>
+                <button class="btn" id="btn-open-settings">settings</button>
+                <button class="btn" id="btn-restart">restart tour</button>
+                <button class="btn quiet" id="btn-exit">exit to landing</button>
+            </div>
+        </section>
+
+        <section id="screen-controls" class="screen" aria-label="Controls">
+            <div class="panel">
+                <h2>Controls</h2>
+                <p class="plain-copy">Drag, or swipe,to look around a room<br>Arrow keys also turn your gaze<br>Select a door or object to interact<br>Not every door is what it says it is.<br>Press Esc at any time to pause.</p>
+                <button class="btn" id="btn-controls-back">back</button>
+            </div>
+        </section>
+        <section id="screen-settings" class="screen" aria-label="Settings">
+            <div class="panel">
+                <h2>Settings</h2>
+                <div class="setting-row"><label for="s-volume">Master Volume</label><input type="range" id="s-volume" min="0" max="100" value="70"></div>
+                <div class="setting-row"><label for="s-subtitles">Sound captions</label><input type="checkbox" id="s-subtitles" checked></div>
+                <div class="setting-row"><label for="s-reduce-motion">Reduce motion</label><input type="checkbox" id="s-reduce-motion"></div>
+                <div class="setting-row"><label for="s-reduce-flash">Reduce flickering/intense scares</label><input type="checkbox" id="s-reduce-flash"></div>
+                <div class="setting-row"><label for="s-contrast">High-contrast prompts</label><input type="checkbox" id="s-contrast"></div>
+                <button class="btn" id="btn-settings-back" style="margin-top:1.4rem;">back</button>
+            </div>
+        </section>
+
+        <section id="screen-ending" class="screen" aria-label="Ending">
+            <div class="landing-inner">
+                <h1 class="title-xl" id="ending-title">FORSAKEN</h1>
+                <p class="subtitle" id="ending-sub"></p>
+                <p class="ending-body" id="ending-body"></p>
+                <div class="landing-buttons">
+                    <button class="btn" id="btn-again">enter again</button>
+                    <button class="btn quiet" id="btn-home">return home</button>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script src="script.js"></script>
+    <script src="rooms.js"></script>
+</body>
+</html>
