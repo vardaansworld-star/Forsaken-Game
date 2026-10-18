@@ -15,3 +15,37 @@ function roundRect(ctx,x,y,w,h,r){
     ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
     ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
 }
+
+const SAVE_KEY='estate-save-v1';
+function defaultState(){
+    return{
+        currentRoom:null,
+        rooms:{entrance:{visits:0},livingRoom:{visits:0},library:{visits:0},upstairs:{visits:0},bedroom:{visits:0},basement:{visits:0}},
+        discoveries:[],
+        playthrough:1,
+        everCompleted:false,
+        settings:{volume:70,subtitles:true,reduceMotion:false,reduceFlash:false,highContrast:false},
+        inProgress:false
+    };
+}
+function loadState(){
+    try{
+        const raw=localStorage.getItem(SAVE_KEY);
+        if(!raw) return defaultState();
+        const parsed=JSON.parse(raw);
+        const d=defaultState();
+        return Object.assign(d,parsed,{
+            rooms:Object.assign(d.rooms,parsed.room||{}),
+            settings:Object.assign(d.settings,parsed.settings||{})
+        });
+    }catch(e){return defaultState();}
+
+}
+let STATE=loadState();
+let saveTimer=null;
+function saveState(){
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>{
+        try{localStorage.setItem(SAVE_KEY,JSON.stringify(STATE));}catch(e){}
+    },150);
+}
