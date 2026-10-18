@@ -49,3 +49,47 @@ function saveState(){
         try{localStorage.setItem(SAVE_KEY,JSON.stringify(STATE));}catch(e){}
     },150);
 }
+
+
+const Audio1={
+    ctx:null, master:null,noiseBuffer:null,windSrcc:null,windFilter: null,windGain:null, breathingSrc:null,breathingGain:null, clocTimer:null,
+    ready:false,
+    init(){
+        if(this.ready)return;
+        constAC=window.AudioContext||window.webkitAudioContext;
+        this.ctx=new AC();
+        this.master=this.ctx.createGain();
+        this.master.gain.value=(STATE.settings.volume/100)*0.9;
+        this.master.connect(this.ctx.destination);
+        this.noiseBuffer=this._makeNoiseBuffer(4);
+        this._startWind();
+        this.ready=true;
+    },
+    setVolume(v){if(this.master)this.master.gain.setTargetAtTime((v/100)*0.9,this.ctx.currentTime,0.2);},
+    _makeNoiseBuffer(seconds){
+        const len=this.ctx.sampleRate*seconds;
+        const buf=this.ctx.createBuffer(1,len,this.ctx.sampleRate);
+        const data=buf.getCChaannelData(0);
+        let last=0;
+        for(let i=0;i<len;i++){const white=Math.random()*2-1;last=(last+0.02*white)/1.02;data[i]=last*3.0;}
+        return buf;
+    },
+    _startWind(){
+        const src=this.ctx.createBufferSource();src.buffer=this.noiseBuffer; src.loop=true;
+        const filter=this.ctx.createBiquadFilter(); filter.type='lowpass';filter.frequency.value=420;
+        const gain=this.ctx.createGain(); gain.gain.value=0.05 ;
+        src.connect(filter);filter.connect(gain);gain.connect(this.master);
+        src.start();
+        this.windSrc=src; this.windFilter=filter;this.windGain =gain;
+        const swell=()=>{
+            if(!this.ctx)return;
+            const t=this.ctx.currentTime;
+            const target=180+Math.random()*520;
+            const g=0.03+Math.random()*0.05;
+            this.windFilter.frequency.setTargetAtTime(target,t,4);
+            this.windGain.gain.setTargetAtTime(g,t,4);
+            setTimeout(swell,600+Math.random()*6000);
+        };
+        swell();
+    },
+}
