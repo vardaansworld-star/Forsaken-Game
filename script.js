@@ -52,11 +52,11 @@ function saveState(){
 
 
 const Audio1={
-    ctx:null, master:null,noiseBuffer:null,windSrcc:null,windFilter: null,windGain:null, breathingSrc:null,breathingGain:null, clocTimer:null,
+    ctx:null, master:null,noiseBuffer:null,windSrc      :null,windFilter: null,windGain:null, breathingSrc:null,breathingGain:null, clockTimer:null,
     ready:false,
     init(){
         if(this.ready)return;
-        constAC=window.AudioContext||window.webkitAudioContext;
+        const AC=window.AudioContext||window.webkitAudioContext;
         this.ctx=new AC();
         this.master=this.ctx.createGain();
         this.master.gain.value=(STATE.settings.volume/100)*0.9;
@@ -69,7 +69,7 @@ const Audio1={
     _makeNoiseBuffer(seconds){
         const len=this.ctx.sampleRate*seconds;
         const buf=this.ctx.createBuffer(1,len,this.ctx.sampleRate);
-        const data=buf.getCChaannelData(0);
+        const data=buf.getChaannelData(0);
         let last=0;
         for(let i=0;i<len;i++){const white=Math.random()*2-1;last=(last+0.02*white)/1.02;data[i]=last*3.0;}
         return buf;
@@ -88,13 +88,13 @@ const Audio1={
             const g=0.03+Math.random()*0.05;
             this.windFilter.frequency.setTargetAtTime(target,t,4);
             this.windGain.gain.setTargetAtTime(g,t,4);
-            setTimeout(swell,600+Math.random()*6000);
+            setTimeout(swell,6000+Math.random()*6000)
         };
         swell();
     },
     _burst(freqStart,freqEnd,dur,vol,pan){
         if(!this.ctx) return;
-        const src=this.ctxx.createBufferSource();src.buffer= this.noiseBuffer;
+        const src=this.ctx.createBufferSource();src.buffer= this.noiseBuffer;
         const filter= this.ctx.createBiquadFilter();filter.type='bandpass';
         filter.frequency.setValueAtTime(freqStart,this.ctx.currentTime);
         filter.frequency.exponentialRampToValueAtTime(Math.max(40,freqEnd),this.ctx.currentTime+dur)
@@ -105,7 +105,7 @@ const Audio1={
         let node=filter;
         if(this.ctx.createStereoPanner){
             const p=this.ctx.createStereoPanner();p.pan.value=pan||0;
-            src.connect(filter);filter.connect (p);p.connect(this.master);
+            src.connect(filter);filter.connect(p);p.connect(g);g.connect(this.master);
         }else {src.connect(filter);filter.connect(g); g.connect(this.master);}
         src.start();src.stop( this.ctx.currentTime+dur+0.05);
     },
@@ -127,26 +127,26 @@ const Audio1={
         ng.gain.exponentialRampToValueAtTime(0.0001,t+0.6);
         src.connect(filt);filt.connect(ng);ng.connect(this.master);
         src.start();src.stop(t+0.65);
-        const osc=this.ctx.createOscillaor();osc.type='sawtooth';
+        const osc=this.ctx.createOscillator();osc.type='sawtooth';
         osc.frequency.setValueAtTime(1400,t);
         osc.frequency.exponentialRampToValueAtTime(70,t+0.5);
         const og=this.ctx.createGain();og.gain.setValueAtTime(0.0001,t);
         og.gain.exponentialRampToValueAtTime(0.7,t+0.03);
         og.gain.exponentialRampToValueAtTime(0.0001,t+0.55);
-        osc.conect(og);og.connect(this.master );
+        osc.connect(og);og.connect(this.master );
         osc.start();osc.stop(t+0.6)
     },
     startClock(){
         this.stopClock();
-        this.clocTimer=setInterval(()=>this.tick(),1000);
+        this.clockTimer=setInterval(()=>this.tick(),1000);
     },
-    stopClock(){if(this.clocTimer){clearInterval(this.clockTimer);this.clockTimer=null;}},
+    stopClock(){if(this.clockTimer){clearInterval(this.clockTimer);this.clockTimer=null;}},
     startBreathing(){
         if(!this.ctx || this.breathingSrc) return;
         const src=this.ctx.createBufferSource();src.buffer=this.noiseBuffer;src.loop=true;
         const filter=this.ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=260;
         const gain=this.ctx.createGain();gain.gain.value= 0;
-        src.connect(filter);filter.connect(gain);gain.connect(this.matter);
+        src.connect(filter);filter.connect(gain);gain.connect(this.master);
         src.start();
         this.breathingSrc=src;this.breathingGain=gain;
         const t=this.ctx.currentTime;
@@ -155,12 +155,12 @@ const Audio1={
         UI.caption('you become aware of breathing that is not your own');
     },
     _breathLFO(gain){
-        if(!this.breathingSrc)retun;
+        if(!this.breathingSrc)return;
         const t= this.ctx.currentTime;
         const base=this.breathingGain===gain?0.05:0.05;
         gain.gain.setTargetAtTime(0.02,t,0.9);
         gain.gain.setTargetAtTime(0.06,t+1.8,0.9);
-        if(this.breathingSrc) this._breathTimer(()=>this._breathLFO(gain),3600);
+        if(this.breathingSrc) this._breathTimer=setTimeout(()=>this._breathLFO(gain),3600);
     },
     stopBreathing(){
         if(!this.breathingSrc)return;
