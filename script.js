@@ -92,4 +92,82 @@ const Audio1={
         };
         swell();
     },
-}
+    _burst(freqStart,freqEnd,dur,vol,pan){
+        if(!this.ctx) return;
+        const src=this.ctxx.createBufferSource();src.buffer= this.noiseBuffer;
+        const filter= this.ctx.createBiquadFilter();filter.type='bandpass';
+        filter.frequency.setValueAtTime(freqStart,this.ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(Math.max(40,freqEnd),this.ctx.currentTime+dur)
+        filter.Q.value=1.2;
+        const g=this.ctx.createGain();g.gain.setValueAtTime(0.0001,this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(vol,this.ctx.currentTime+dur*0.25);
+        g.gain.exponentialRampToValueAtTime(0.0001,this.ctx.currentTime+dur);
+        let node=filter;
+        if(this.ctx.createStereoPanner){
+            const p=this.ctx.createStereoPanner();p.pan.value=pan||0;
+            src.connect(filter);filter.connect (p);p.connect(this.master);
+        }else {src.connect(filter);filter.connect(g); g.connect(this.master);}
+        src.start();src.stop( this.ctx.currentTime+dur+0.05);
+    },
+    creak(){this._burst(900,140,0.9,0.14,(Math.random()*2-1));UI.caption('the floor creaks,somewhere close');},
+    knock(){this._burst(220,60,0.35,0.22,(Math.random()*2-1));UI.caption('a single knock,from the wall.');},
+    whisper(){this._burst(2600,1800,1.4,0.05,(Math.random()*2-1));UI.caption('a whisper ,tooquiet to place.');},
+    tick(){this._burst(2000,1900,0.04,0.08,0);},
+    distantWalk(){this._burst(400,200,1.6,0.06,(Math.random()*2-1));UI.caption('footsteps,somewhere above.');},
+    screech(){
+        if(!this.ctx) return;
+        const t=this.ctx.currentTime;
+        const src=this.ctx.createBufferSource(); src.buffer=this.noiseBuffer;
+        const filt=this.ctx.createBiquadFilter();filt.type='bandpass';
+        filt.frequency.setValueAtTime(3200,t);
+        filt.frequency.exponentialRampToValueAtTime(220,t+0.4);
+        filt.Q.value=6;
+        const ng=this.ctx.createGain();ng.gain.setValueAtTime(0.0001,t);
+        ng.gain.exponentialRampToValueAtTime(0.9,t+0.03);
+        ng.gain.exponentialRampToValueAtTime(0.0001,t+0.6);
+        src.connect(filt);filt.connect(ng);ng.connect(this.master);
+        src.start();src.stop(t+0.65);
+        const osc=this.ctx.createOscillaor();osc.type='sawtooth';
+        osc.frequency.setValueAtTime(1400,t);
+        osc.frequency.exponentialRampToValueAtTime(70,t+0.5);
+        const og=this.ctx.createGain();og.gain.setValueAtTime(0.0001,t);
+        og.gain.exponentialRampToValueAtTime(0.7,t+0.03);
+        og.gain.exponentialRampToValueAtTime(0.0001,t+0.55);
+        osc.conect(og);og.connect(this.master );
+        osc.start();osc.stop(t+0.6)
+    },
+    startClock(){
+        this.stopClock();
+        this.clocTimer=setInterval(()=>this.tick(),1000);
+    },
+    stopClock(){if(this.clocTimer){clearInterval(this.clockTimer);this.clockTimer=null;}},
+    startBreathing(){
+        if(!this.ctx || this.breathingSrc) return;
+        const src=this.ctx.createBufferSource();src.buffer=this.noiseBuffer;src.loop=true;
+        const filter=this.ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=260;
+        const gain=this.ctx.createGain();gain.gain.value= 0;
+        src.connect(filter);filter.connect(gain);gain.connect(this.matter);
+        src.start();
+        this.breathingSrc=src;this.breathingGain=gain;
+        const t=this.ctx.currentTime;
+        gain.gain.linearRampToValueAtTime(0.05,t+2);
+        this._breathLFO(gain);
+        UI.caption('you become aware of breathing that is not your own');
+    },
+    _breathLFO(gain){
+        if(!this.breathingSrc)retun;
+        const t= this.ctx.currentTime;
+        const base=this.breathingGain===gain?0.05:0.05;
+        gain.gain.setTargetAtTime(0.02,t,0.9);
+        gain.gain.setTargetAtTime(0.06,t+1.8,0.9);
+        if(this.breathingSrc) this._breathTimer(()=>this._breathLFO(gain),3600);
+    },
+    stopBreathing(){
+        if(!this.breathingSrc)return;
+        const t=this.ctx.currentTime;
+        this.breathingGain.gain.setTargetAtTime(0,t,0.3);
+        clearTimeout(this._breathTimer);
+        const src=this.breathingSrc;this.breathingSrc=null;
+        setTimeout(()=>{try{src.stop();}catch(e){}},1000);
+    }
+};
