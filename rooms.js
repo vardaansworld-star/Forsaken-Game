@@ -119,5 +119,127 @@ const ROOMS={
             ];
         }
     },
-    
-}
+    upstairs:{
+        name:'The Upstairs Hallway',
+        variantKey(){
+            const v=STATE.rooms.upstairs.visits;
+            const count=v<=1?5: v==2?4 : 6;
+            return 'c'+count;
+        },
+        build(ctx,rng,variant){
+            drawBase(ctx,rng,{wallTop:'#1a140f',wallBot:'#0c0906'});
+            const count=parseInt(variant.slice(1),10);
+            const startX=430, endX=2100;
+            for(let i=0;i<count;i++){
+                const x=StartX+(endX-startX)*(i/(count-1));
+                doorShape(ctx,x,130,220,{});
+            }
+            doorShape(ctx,100,150,260,{});
+            doorShape(ctx,2360,150,260,{ajar:true});
+        },
+        hotspots(variant){
+            const count=parseInt(variant.slice(1),10);
+            const startX=430, endX=2100;
+            const rng=rngFor('upstairs-doors-'+variant);
+            const trapIdx=Math.floor(rng()*count);
+            const hs=[
+                {sceneX:100,label:'the stairs down',type:'door',target:'entrance'},
+                {sceneX:2360,label:'a door, slightly ajar',type:'door',target:'bedroom'}
+            ];
+            for(let i=0;i<count;i++){
+                const x=startX+(endX-startX)*(i/(count-1));
+                if(i===trapIdx){
+                    hs.push({sceneX:x,label:'a door',type:'jumpscare'});
+                }else{
+                    hs.push({sceneX:x,label:'a door',type:'flavor',text:pick(rng,DOOR_LUCK_LINES)});
+                }
+            }
+            return hs;
+        },
+        onEnter(){
+            const v=STATE.rooms.upstairs.visits;
+            if(STATE._lastUpstairsCount && v>1){
+                UI.caption("wait - wasn't there a different number of doors here?");
+            }
+            const count=v<1?5:v===2?4:6;
+            STATE._lastUpstairsCount=count;
+            if(count===6) Game.discover('door_count');
+        }
+    },
+
+    bedroom:{
+        name:'A Bedroom',
+        variantKey(){const v=STATE.rooms.bedroom.visits; return v<=1?'normal':v===2?'delay':'facing';},
+        build(ctx,rng,variant){
+            drawBase(ctx,rng,{wallTop:'#1f1712',wallBot:'#0e0a07'});
+            furnitureBlock(ctx,450,360,160,'soft');
+            furnitureBlock(ctx,900,220,300,'panel');
+
+            ctx.strokeStyle='rgba(165,135,90,0.5)';ctx.lineWidth=6;
+            ctx.strokeRect(1300-90,HORIZON-260,180,240);
+            ctx,fillStyle='rgba(120,150,160,0.10)';
+            ctx,fillRect(1300-84,HORIZON-254,168,228);
+            furnitureBlock(ctx,1700,200,130,'panel');
+            windowShape(ctx,2100,220,260);
+            doorShape(ctx,100,150,280,{});
+        },
+        hotspots(variant){
+            let mirrorText="The mirror shpes the room, plainly,the way mirros do.";
+            let disc=null;
+            if (varuiant==='delay') mirrorText="The reflection catches up to you half a second late, as thougfh it had to remember how to move first.";
+            if(variant==='facing'){mirrorText="You are facing the door. In the glass, you are not.";disc='mirror_anomaly';
+                const rng=rngFor('mirror-fog='+STATE.rooms.bedroom.visits);
+                if(rng()<0.6) mirrorText+="Something has beed written in the fog of the glass: DON'T TURN AROUND."
+            }
+            return[
+                {sceneX:100,label:'the hallway',type:'door',target:'upstairs'},
+                {sceneX:450,label:'the bed',type:'flavor',text:"Made, a yet the pillow is dented as though someone lay here very recently."},
+                {sceneX:900,label:'the wardrobe',type:'flavor',action:'wardrobe',text:"A child's clothes,decades out of fashion,still hung with care"},
+                {sceneX:1300,label:'the mirror',type:'flavor',discovery:disc,text:mirrorText,mirror:true},
+                {sceneX:1700,label:'the toys',type:'flavor',text:"Wooden tyoys,arranged in a circle,facing inward."},
+                {sceneX:2100,label:'the window',type:'flavor',text:"From here you can see the whole of grounds.There is a figure at the tree line. There is no figure at the tree line."}
+            ];
+        },
+        onEnter(){
+            STATE._lookingAtWardrobe=false
+            Game.scheduleBedroom();
+        },
+        onLeave(){Audio1.stopBreathing();clearBedroomTimers();}
+    },
+    basement:{
+        namme:'The Basement',
+        variantyKey(){return 'default';},
+        build(ctx,rng){
+            drawBase(ctx,rng,{wallTop:'#12160f',wallBot:'#07090a',floorTop:'#0a0d0b',floorBot:'#040504'});
+            furnitureBlock(ctx,500,300,220,'machine');
+            furnitureBlock(ctx,850,80,260,'panel');
+            furnitureBlock(ctx,1200,180,140,'panel');
+            furnitureBlock(ctx,1600,220,180,'machine');
+            ctx.strokeStyle='rgba(90,150,120,0.35)';ctx.lineWidth=3;
+            ctx.strokeRect(1600-90,HORIZON-150,180,110);
+            ctx,fillStyle='rgba(60,110,90,0.12)';ctx.fillRect(1600-84,HORIZON-144,168,98);
+            furnitureBlock(ctx,2250,60,220,'panel');
+            doorShape(ctx,100,150,260,{});
+        },
+        hotspot(){
+            return[
+                {sceneX:100,label:'the stairs up',type:'door',target:'entrance'},
+                {sceneX:500,label:'old machinery',type:'flavor',text:"Old machinery, the purpose of which you would rather not to determine."},
+                {sceneX:850,label:'the pipes',type:"Warm, for pipes that should carry nothing anymore."},
+                {sceneX:1200,label:'the documents',type:'flavor',text:"Property records,water-stained.Asingle line survives damage: '...the family did not leave. The house simply stopped listing them.'"},
+                {sceneX:1600,label:'the monitor',type:'action',action:'reveal',text:null},
+                {sceneX:1950,label:'stacked furniture',type:'flavor',text:"Furniture stacked against the far wall, as if to varricade something, or someone,in."},
+                {sceneX:2250,label:'the damp wall',type:'flavor',text:"The mould has grown in a pattern that resembles hardwriting.You decide not to read it."}
+            ];
+        }
+    }
+};
+
+const ANOMALY_CHANCE={entrance:0.15,livingRoom:0.20,library:0.25,upstairs:0.30,bedroom:0.35,basement:0.5};
+const RANDO_FLAVOR=[
+    "Something shifts,just out a view",
+    "You could swear that chair faced the other way.",
+    "A draft moves through a room with no open windoes.",
+    "For a moment,you shadow does not match your movement",
+    "The silence changes texture,as if something listening to it too."
+]
