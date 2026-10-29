@@ -20,7 +20,7 @@ body{
     color:var(--ink);
     font-family:'IBM Plex Mono',monospace;
     overflow:hidden;
-    -webkt-font-soothing:antialiased;
+    -webkit-font-smoothing:antialiased;
 }
 #app{position:fixed; inset:0;}
 .screen{
@@ -28,7 +28,7 @@ body{
     inset:0;
     display:none;
     opacity:0;
-    transition:opacity .5s easr;
+    transition:opacity .5s ease;
 }
 .screen.active{
     display:flex;
@@ -135,7 +135,7 @@ body{
     justify-content:center;
 }
 
-#scree-loading{
+#screen-loading{
     align-items:center;
     justify-content:center;
     background:#000;
@@ -245,7 +245,7 @@ body{
 }
 
 #vignette{
-    position:absolutel;
+    position:absolute;
     inset:0;
     pointer-events:none;
     background:radial-gradient(ellipse at center,rgba(0,0,0,0)34%,rgba(0,0,0,.6)76%,rgba(0,0,0,.96)100%);
@@ -267,6 +267,12 @@ body{
     pointer-events: none;
 }
 #btn-settings{
+    right:1.2rem;
+    pointer-events:auto;
+    background:transparent;
+    border:none;
+    color:var(--ink-dim);
+    font-size:1.2rem;
     position:absolute;
     top:1.2rem;
     cursor:pointer;
@@ -381,13 +387,13 @@ body{
     display:none;
 }
 #jumpscare-lose h2{
-    font-family:'Oswald',sans-seif;
+    font-family:'Oswald',sans-serif;
     font-weight:700;
-    letter-spacing:2rem;
     text-transform:uppercase;
     font-size:clamp(2rem,7vw,3.4rem);
     color:var(--blood-bright);
     margin:0;
+    letter-spacing: .2rem;
 }
 #jumpscare-lose p{
     font-family:'IBM Plex Mono',monospace;
@@ -396,7 +402,10 @@ body{
     margin:0;
     letter-spacing:.02rem;
 }
-
+.modal.show{
+    opacity: 1;
+    pointer-events:auto;
+}
 
 .modal {
     position:absolute;

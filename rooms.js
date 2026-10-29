@@ -1,10 +1,10 @@
 'use strict';
 
-const DOOR_LOCK_LINES=['it will not be open.','sswollen shut in its frame.','locked, though there is no keyhole','something leans against it, from the other side'];
+const DOOR_LOCK_LINES=['it will not be open.','swollen shut in its frame.','locked, though there is no keyhole','something leans against it, from the other side'];
 
 const ROOMS={
     entrance:{
-        name:'The Enterance Hall',
+        name:'The Entrance Hall',
         variantKey(){const v=STATE.rooms.entrance.visits;return v>=2?'four':'three';},
         build(ctx,rng,variant){
             drawBase(ctx,rng,{});
@@ -13,7 +13,7 @@ const ROOMS={
             furnitureBlock(ctx,1200,300,260,'shelf');
 
             ctx.strokeStyle='rgba(165,135,90,0.4)';ctx.lineWidth=3;
-            ctx.beginPath();ctx,moveTo(1200,4);ctx.lineTo(1200,80);
+            ctx.beginPath();ctx.moveTo(1200,4);ctx.lineTo(1200,80);
             ctx.moveTo(1140,30);ctx.lineTo(1260,30); ctx.stroke();
 
             const count=variant==='four'?4:3;
@@ -33,7 +33,7 @@ const ROOMS={
             doorShape(ctx,1650,140,260,{fill:'#100906'});
             doorShape(ctx,80,170,320,{fill:'#221812'});
         },
-        hotspots(varuiant){
+        hotspots(variant){
             return[
                 {sceneX:80,label:'the front door',type:'jumpscare'},
                 {sceneX:380,label:'library',type:'door',target:'library'},
@@ -60,7 +60,7 @@ const ROOMS={
             furnitureBlock(ctx,1150,160,130,'panel');
             furnitureBlock(ctx,1450,220,220,'shelf');
             if(variant==='missing'){
-                ctx,strokeStyle='rgba(165,135,90,0.35)';ctx.lineWidth=3;
+                ctx.strokeStyle='rgba(165,135,90,0.35)';ctx.lineWidth=3;
                 ctx.strokeRect(1750-55,150,110,140);
             }else{
                 portraitShape(ctx,1750,150,110,140,variant==='facing'?'front':'side');
@@ -71,13 +71,13 @@ const ROOMS={
         },
         hotspots(variant){
             return[
-                {sceneX:100,label:'enterance hall',type:'door',target:'enterance'},
+                {sceneX:100,label:'entrance hall',type:'door',target:'entrance'},
                 {sceneX:500,label:'the sofa',type:'flavor',text:"The cushions still hold an impression, as though someone rose from it only a moment ago."},
                 {sceneX:850,label:'the fireplace',type:'flavor',text:"Cold ash. It has been cold for a very long time."},
                 {sceneX:1150,label:'the television',type:'flavor',text:"the screen is dark.It bwas never plugged into anything, and yet you feel it was recently on."},
                 {sceneX:1450,label:'the bookshelf',type:'flavor',text:"Spines with no title. Someone removed the lettering, or never wrote it."},
                 {sceneX:1750,label:'the photograph',type:'flavor',discovery:variant==='facing'?'facing_photo':null,text:variant=='normal' ? "A family,arraged for the camera the way families are. Nobody in the frame is smiling."
-                    :variant==='mising' ? "The frame is empty. Even the dust has kept its shape."
+                    :variant==='missing' ? "The frame is empty. Even the dust has kept its shape."
                     :"The photograph has returned. But the man who once stood in profile is now facing the camera directly. He was not, before."},
                 {sceneX:2050,label:'the cabinet',type:'flavor',text:"Locked. A key-shaped patch of clean wood suggest one hung here once."},
                 {sceneX:2300,label:'the window',type:'flavor',text:"The glass fronts a garden that no longer exists in any season you recognise."}
@@ -104,11 +104,11 @@ const ROOMS={
             doorShape(ctx,100,150,300,{});
         },
         hotspots(variant){
-            const idx=Math.min(STATE,room.library.visits,4)-1;
-            const entry=ROOMS.library.diaryEnteries[Math.min(Math.max(idx,0),3)];
+            const idx=Math.min(STATE.rooms.library.visits,4)-1;
+            const entry=ROOMS.library.diaryEntries[Math.min(Math.max(idx,0),3)];
             const disc=idx>=2 ? 'diary_change':null;
             return[
-                {sceneX:100,label:'enterance hall',type:'door',target:'entrance'},
+                {sceneX:100,label:'entrance hall',type:'door',target:'entrance'},
                 {sceneX:450,label:'the bookshelves',type:'flavor',text:"Rows of leather spines.A few titles repeat themselves, over and over, down the shelf."},
                 {sceneX:800,label:'the desk',type:'flavor',text:"A half-finished letter on the typewritter, addressed to no one,dated a year that has not happened yet."},
                 {sceneX:1150,label:'the diary',type:'flavor',discovery:disc,text:entry},
@@ -131,7 +131,7 @@ const ROOMS={
             const count=parseInt(variant.slice(1),10);
             const startX=430, endX=2100;
             for(let i=0;i<count;i++){
-                const x=StartX+(endX-startX)*(i/(count-1));
+                const x=startX+(endX-startX)*(i/(count-1));
                 doorShape(ctx,x,130,220,{});
             }
             doorShape(ctx,100,150,260,{});
@@ -151,7 +151,7 @@ const ROOMS={
                 if(i===trapIdx){
                     hs.push({sceneX:x,label:'a door',type:'jumpscare'});
                 }else{
-                    hs.push({sceneX:x,label:'a door',type:'flavor',text:pick(rng,DOOR_LUCK_LINES)});
+                    hs.push({sceneX:x,label:'a door',type:'flavor',text:pick(rng,DOOR_LOCK_LINES)});
                 }
             }
             return hs;
@@ -161,7 +161,7 @@ const ROOMS={
             if(STATE._lastUpstairsCount && v>1){
                 UI.caption("wait - wasn't there a different number of doors here?");
             }
-            const count=v<1?5:v===2?4:6;
+            const count=v<=1?5:v===2?4:6;
             STATE._lastUpstairsCount=count;
             if(count===6) Game.discover('door_count');
         }
@@ -177,8 +177,8 @@ const ROOMS={
 
             ctx.strokeStyle='rgba(165,135,90,0.5)';ctx.lineWidth=6;
             ctx.strokeRect(1300-90,HORIZON-260,180,240);
-            ctx,fillStyle='rgba(120,150,160,0.10)';
-            ctx,fillRect(1300-84,HORIZON-254,168,228);
+            ctx.fillStyle='rgba(120,150,160,0.10)';
+            ctx.fillRect(1300-84,HORIZON-254,168,228);
             furnitureBlock(ctx,1700,200,130,'panel');
             windowShape(ctx,2100,220,260);
             doorShape(ctx,100,150,280,{});
@@ -186,7 +186,7 @@ const ROOMS={
         hotspots(variant){
             let mirrorText="The mirror shpes the room, plainly,the way mirros do.";
             let disc=null;
-            if (varuiant==='delay') mirrorText="The reflection catches up to you half a second late, as thougfh it had to remember how to move first.";
+            if (variant==='delay') mirrorText="The reflection catches up to you half a second late, as thougfh it had to remember how to move first.";
             if(variant==='facing'){mirrorText="You are facing the door. In the glass, you are not.";disc='mirror_anomaly';
                 const rng=rngFor('mirror-fog='+STATE.rooms.bedroom.visits);
                 if(rng()<0.6) mirrorText+="Something has beed written in the fog of the glass: DON'T TURN AROUND."
@@ -207,8 +207,8 @@ const ROOMS={
         onLeave(){Audio1.stopBreathing();clearBedroomTimers();}
     },
     basement:{
-        namme:'The Basement',
-        variantyKey(){return 'default';},
+        name:'The Basement',
+        variantKey(){return 'default';},
         build(ctx,rng){
             drawBase(ctx,rng,{wallTop:'#12160f',wallBot:'#07090a',floorTop:'#0a0d0b',floorBot:'#040504'});
             furnitureBlock(ctx,500,300,220,'machine');
@@ -217,15 +217,16 @@ const ROOMS={
             furnitureBlock(ctx,1600,220,180,'machine');
             ctx.strokeStyle='rgba(90,150,120,0.35)';ctx.lineWidth=3;
             ctx.strokeRect(1600-90,HORIZON-150,180,110);
-            ctx,fillStyle='rgba(60,110,90,0.12)';ctx.fillRect(1600-84,HORIZON-144,168,98);
+            ctx.fillStyle='rgba(60,110,90,0.12)';ctx.fillRect(1600-84,HORIZON-144,168,98);
+            furnitureBlock(ctx,1950,240,150,'panel');   
             furnitureBlock(ctx,2250,60,220,'panel');
             doorShape(ctx,100,150,260,{});
         },
-        hotspot(){
+        hotspots(){
             return[
                 {sceneX:100,label:'the stairs up',type:'door',target:'entrance'},
                 {sceneX:500,label:'old machinery',type:'flavor',text:"Old machinery, the purpose of which you would rather not to determine."},
-                {sceneX:850,label:'the pipes',type:"Warm, for pipes that should carry nothing anymore."},
+                {sceneX:850,label:'the pipes',type:'flavor',text:"Warm, for pipes that should carry nothing anymore."},
                 {sceneX:1200,label:'the documents',type:'flavor',text:"Property records,water-stained.Asingle line survives damage: '...the family did not leave. The house simply stopped listing them.'"},
                 {sceneX:1600,label:'the monitor',type:'action',action:'reveal',text:null},
                 {sceneX:1950,label:'stacked furniture',type:'flavor',text:"Furniture stacked against the far wall, as if to varricade something, or someone,in."},
@@ -236,7 +237,7 @@ const ROOMS={
 };
 
 const ANOMALY_CHANCE={entrance:0.15,livingRoom:0.20,library:0.25,upstairs:0.30,bedroom:0.35,basement:0.5};
-const RANDO_FLAVOR=[
+const RANDOM_FLAVOR=[
     "Something shifts,just out a view",
     "You could swear that chair faced the other way.",
     "A draft moves through a room with no open windoes.",
