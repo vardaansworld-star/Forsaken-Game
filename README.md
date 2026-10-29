@@ -1,6 +1,6 @@
 # FORSAKEN
 
-**A haunted house horror game that runs in the browser!!!
+** A haunted house horror game that runs in the browser!!! **
 
 Explore a haunted house! Room by Room! Open doors,read notes,check mirror, listen to the house!! Be carefull of which door to open....
 
